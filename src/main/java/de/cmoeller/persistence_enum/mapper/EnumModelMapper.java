@@ -1,5 +1,6 @@
 package de.cmoeller.persistence_enum.mapper;
 
+import de.cmoeller.persistence_enum.exceptions.PersistenceEnumException;
 import de.cmoeller.persistence_enum.interfaces.PersistenceEnumModel;
 import de.cmoeller.persistence_enum.annotations.PersistenceEnumField;
 
@@ -11,7 +12,11 @@ public class EnumModelMapper {
 
     public <MODEL extends PersistenceEnumModel> MODEL mapInExistingModel(Enum enumEntry, MODEL model){
         Map<String, FieldValueWrapper> result = createValueMapForEntity(enumEntry, getEnumFields(enumEntry.getClass()));
-        return mapToExistingEntity(model, result, enumEntry.name());
+        try{
+            return mapToExistingEntity(model, result, enumEntry.name());
+        }catch (Exception e){
+            throw PersistenceEnumException.of(e);
+        }
     }
 
     public <MODEL extends PersistenceEnumModel> MODEL map(Enum enumEntry, Class<MODEL> modelClass){
@@ -69,15 +74,13 @@ public class EnumModelMapper {
         try{
             return field.get(enumEntry);
         }catch (IllegalAccessException e){
-            throw new RuntimeException(e.getMessage());
+            throw PersistenceEnumException.of(e);
         }finally {
             field.setAccessible(isAccessible);
         }
     }
 
-    private <ENTITY extends PersistenceEnumModel> ENTITY mapToExistingEntity(ENTITY modelInstance, Map<String, FieldValueWrapper> fieldValueMap, String enumName){
-
-        try{
+    private <ENTITY extends PersistenceEnumModel> ENTITY mapToExistingEntity(ENTITY modelInstance, Map<String, FieldValueWrapper> fieldValueMap, String enumName) throws IllegalAccessException, NoSuchFieldException {
 
             Class<? extends PersistenceEnumModel> type = modelInstance.getClass();
             boolean modelIsNew = modelInstance.isNew();
@@ -98,10 +101,6 @@ public class EnumModelMapper {
 
             return modelInstance;
 
-        }catch (Exception e){
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
-        }
     }
 
     private <ENTITY extends PersistenceEnumModel> ENTITY mapToEntity(Class<ENTITY> type,  Map<String, FieldValueWrapper> fieldValueMap, String enumName){
@@ -112,8 +111,7 @@ public class EnumModelMapper {
             return mapToExistingEntity(modelInstance, fieldValueMap, enumName);
 
         }catch (Exception e){
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            throw PersistenceEnumException.of(e);
         }
     }
 

@@ -1,5 +1,6 @@
 package de.cmoeller.persistence_enum;
 
+import de.cmoeller.persistence_enum.exceptions.PersistenceEnumException;
 import de.cmoeller.persistence_enum.interfaces.PersistenceEnum;
 import de.cmoeller.persistence_enum.interfaces.PersistenceEnumModel;
 import de.cmoeller.persistence_enum.interfaces.PersistenceEnumRepo;
@@ -38,12 +39,11 @@ public class PersistenceEnumContext {
     public void persistEnum(PersistenceEnum<?> persistenceEnum){
 
         if(!(persistenceEnum instanceof Enum))
-            throw new RuntimeException(String.format("Instance of class %s is not of type %s", persistenceEnum.getClass().getSimpleName(), Enum.class.getSimpleName()));
+            throw PersistenceEnumException.of(new IllegalStateException(String.format("Class %s is no assignable form of enum", this.getClass().getSimpleName())));
 
         Enum<?> enumEntry = (Enum<?>) persistenceEnum;
 
         EnumModelMapper mapper = new EnumModelMapper();
-        this.persistenceEnumRepo.getByTypeAndName(persistenceEnum.getModelClass(), persistenceEnum.name());
         Optional<PersistenceEnumModel> foundModel = this.persistenceEnumRepo.getByTypeAndName(persistenceEnum.getModelClass(), persistenceEnum.name());
         PersistenceEnumModel model = foundModel.isPresent() ? mapper.mapInExistingModel(enumEntry, foundModel.get()) : mapper.map(enumEntry, persistenceEnum.getModelClass());
 

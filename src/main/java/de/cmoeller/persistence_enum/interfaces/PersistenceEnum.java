@@ -1,6 +1,7 @@
 package de.cmoeller.persistence_enum.interfaces;
 
 import de.cmoeller.persistence_enum.PersistenceEnumContext;
+import de.cmoeller.persistence_enum.exceptions.PersistenceEnumException;
 import de.cmoeller.persistence_enum.mapper.EnumModelMapper;
 
 import java.lang.reflect.ParameterizedType;
@@ -15,6 +16,10 @@ public interface PersistenceEnum<MODEL extends PersistenceEnumModel> {
         Class<MODEL> modelClass = getModelClass();
         EnumModelMapper mapper = new EnumModelMapper();
         Optional<MODEL> persistedModel = PersistenceEnumContext.getInstance().findPersistenceModelByName(modelClass, name());
+
+        if(!(this instanceof Enum))
+            throw PersistenceEnumException.of(new IllegalStateException(String.format("Class %s is no assignable form of enum", this.getClass().getSimpleName())));
+
         return persistedModel.orElse(mapper.map((Enum) this, modelClass));
     }
 
