@@ -80,13 +80,14 @@ public class EnumModelMapper {
         try{
 
             Class<? extends PersistenceEnumModel> type = modelInstance.getClass();
+            boolean modelIsNew = modelInstance.isNew();
             modelInstance.setName(enumName);
 
             for(String key : fieldValueMap.keySet()){
                 Field field = type.getDeclaredField(key);
 
                 FieldValueWrapper fieldValueWrapper = fieldValueMap.get(key);
-                if(!modelInstance.isNew() && fieldValueWrapper.mergeStrategy.equals(PersistenceEnumField.Strategy.CREATE_ONLY))
+                if(!modelIsNew && fieldValueWrapper.mergeStrategy.equals(PersistenceEnumField.Strategy.CREATE_ONLY))
                     continue;
 
                 boolean isAccessible = field.isAccessible();

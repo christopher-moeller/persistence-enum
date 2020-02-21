@@ -4,6 +4,8 @@ public interface PersistenceEnumModel {
 
     public String getName();
     public void setName(String name);
-    public boolean isNew();
+    public default boolean isNew() {
+        return getName() == null;
+    }
 
 }

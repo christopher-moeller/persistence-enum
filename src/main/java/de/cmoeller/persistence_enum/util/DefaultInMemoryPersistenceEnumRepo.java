@@ -7,7 +7,7 @@ import java.util.*;
 
 public class DefaultInMemoryPersistenceEnumRepo implements PersistenceEnumRepo {
 
-    private Map<Class<? extends PersistenceEnumModel>, List<PersistenceEnumModel>> memory;
+    protected Map<Class<? extends PersistenceEnumModel>, List<PersistenceEnumModel>> memory;
 
     public DefaultInMemoryPersistenceEnumRepo(){
         this.memory = new HashMap<>();

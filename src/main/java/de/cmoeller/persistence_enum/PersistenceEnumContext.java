@@ -6,6 +6,9 @@ import de.cmoeller.persistence_enum.interfaces.PersistenceEnumRepo;
 import de.cmoeller.persistence_enum.mapper.EnumModelMapper;
 import de.cmoeller.persistence_enum.util.DefaultInMemoryPersistenceEnumRepo;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 public class PersistenceEnumContext {
@@ -13,6 +16,8 @@ public class PersistenceEnumContext {
     private static PersistenceEnumContext instance = null;
 
     private PersistenceEnumRepo persistenceEnumRepo;
+
+    private List<Class<? extends Enum>> enumsInContext = new ArrayList<>();
 
     private PersistenceEnumContext(){
         this.persistenceEnumRepo = new DefaultInMemoryPersistenceEnumRepo();
@@ -26,7 +31,8 @@ public class PersistenceEnumContext {
     }
 
     public <MODEL extends PersistenceEnumModel> Optional<MODEL> findPersistenceModelByName(Class<MODEL> modelType, String name){
-        return Optional.empty();
+        return this.persistenceEnumRepo.getByTypeAndName(modelType, name)
+                .map(model -> (MODEL) model);
     }
 
     public void persistEnum(PersistenceEnum<?> persistenceEnum){
@@ -42,6 +48,24 @@ public class PersistenceEnumContext {
         PersistenceEnumModel model = foundModel.isPresent() ? mapper.mapInExistingModel(enumEntry, foundModel.get()) : mapper.map(enumEntry, persistenceEnum.getModelClass());
 
         this.persistenceEnumRepo.save(model);
+    }
+
+    public void addEnumsToContext(Class<? extends Enum> ...enums){
+        addEnumsToContext(Arrays.asList(enums));
+    }
+
+    public void addEnumsToContext(List<Class<? extends Enum>> enums){
+        enumsInContext.addAll(enums);
+    }
+
+    public void persistAllEnums(){
+        for(Class<? extends Enum> enumType : enumsInContext){
+            Enum[] enums = enumType.getEnumConstants();
+            Arrays.asList(enums)
+                    .stream()
+                    .map(PersistenceEnum.class::cast)
+                    .forEach(PersistenceEnum::persist);
+        }
     }
 
     public PersistenceEnumRepo getPersistenceEnumRepo() {
