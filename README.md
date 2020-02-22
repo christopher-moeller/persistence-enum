@@ -34,6 +34,13 @@ public class RightEntity implements PersistenceEnumModel {
 
 ### Example of an PersistenceEnum linked with RightEntity:
 
+If the names of attributes in enum and model are the same, everything works fine. 
+Otherwise it's necessary to tell the mapper which field of the enum belongs to which field
+of the model. You can do this with the annotation @PersistenceEnumField. Also it's possible
+to change the merge strategy of every field. By default the mapper only writes the value of
+an field into a model, if the model is new (e.g. not persisted to an database). 
+If you want to override the value in the database everytime the enum is persisted, 
+you can set the merge strategy to Strategy.UPDATE.
 
 ```java
 
